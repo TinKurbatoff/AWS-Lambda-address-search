@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "aws-sdk": "^2.1167.0",
+    "pg": "^8.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0"
+  },
+  "scripts": {
+    "start" : "index"
+  }
+}
