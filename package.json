@@ -1,12 +1,25 @@
 {
+  "main": "index.js",
+  "author": "Constantine K",
+  "license": "ISC",
   "dependencies": {
+    "@types/express": "^4.17.13",
+    "@types/pg-pool": "^2.0.3",
+    "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1167.0",
-    "pg": "^8.7.3"
+    "dotenv": "^16.0.1",
+    "env": "^0.0.2",
+    "express": "^4.18.1",
+    "pg": "^8.7.3",
+    "pg-types": "^4.0.0",
+    "serverless-http": "^3.0.1"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0"
+    "@types/node": "^18.0.0",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.7.4"
   },
   "scripts": {
-    "start" : "index"
+    "start": "ts-node ./index.ts"
   }
 }
