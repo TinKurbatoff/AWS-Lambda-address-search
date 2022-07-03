@@ -1,6 +1,7 @@
 import { PoolClient, QueryResult, ResultBuilder } from 'pg';
 const pg = require('pg');
 var dotenv = require('dotenv');
+dotenv.config();
 
 console.log(`ENVIRONMENT:${process.env.ENVIRONMENT}`);
 console.log(`RDS_USERNAME:${process.env.RDS_USERNAME}`);
@@ -25,28 +26,15 @@ pool.on('error', (err: Error, client: PoolClient): void => {
 // Connect to pool
 pool.connect()
 
-// let queryString = queryStringCreate;              
-// let result = pool.query(queryString).then( (res: ResultBuilder) => {
-//             console.log(res.command)
-//             console.debug(`📬  Executed action ${queryString} OKAY.`)
-//             return res.rows;
-//             }).catch((err: { message: any; }) => {
-//             console.log(err.message)
-//             console.log(`⛔️  Query failed: ${queryString}`)
-//             // throw err;
-//             // console.log(err.stack)    
-//             return [{}];
-//             })
-
-/* */
+/* Class with static method to query database */
 export class dbHandlerClass {
   /*  Class handles connection to a database and returns rows */
-  static async queryPool(conn: PoolClient, queryString:string, params: any): Promise<Array<Object>> {
+  static async queryPool(conn: PoolClient, queryString:string, params: Array<string>): Promise<Array<Object>> {
       return conn.query(queryString, params)
       .then( (res: QueryResult<any>) => {
           // console.log(res.command)
           // console.debug(`📬  Executed action ${queryString} OKAY.`)
-          return res?.rows;
+          return res.rows.length? res.rows : [res.command];
           })
       .catch((err: { message: any; }) => {
           console.log(err.message)

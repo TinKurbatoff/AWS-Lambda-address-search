@@ -1,17 +1,19 @@
 import { dbHandlerClass, pool } from './databaseHandler';
+var dotenv = require('dotenv');
+dotenv.config();
 
 /* —————————————————————- SEED DATABASE QUESRIES  ——————————————————— */
-let queryStringDrop = `DROP DATABASE $1;`
+let queryStringDrop = `DROP DATABASE IF EXISTS $1;`;
 let postgresFunction = `CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETURNS TRIGGER AS $$
                         BEGIN
                             NEW.updated_at = NOW();
                             RETURN NEW;
                         END;
-                        $$ LANGUAGE plpgsql;`
+                        $$ LANGUAGE plpgsql;`;
 let createTrigger = `CREATE OR REPLACE TRIGGER set_timestamp
                     BEFORE UPDATE ON $1
                     FOR EACH ROW
-                    EXECUTE PROCEDURE trigger_set_timestamp();`                        
+                    EXECUTE PROCEDURE trigger_set_timestamp();`;
 let queryStringCreate = `CREATE TABLE IF NOT EXISTS $1 (\
                 id SERIAL PRIMARY KEY \
                 , created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() \
@@ -35,15 +37,24 @@ let queryStringCreate = `CREATE TABLE IF NOT EXISTS $1 (\
                 ,	geocoding_accuracy VARCHAR(32)
                 ,	census_tract VARCHAR(32)
                 ,	carrier_code VARCHAR(32)
-                                );`
+                                );`;
 
 
-export async function seedDatabase(){
+export async function seedDatabase(databaseName: string): Promise<string> {
     /* Creates Database  */
-        for (const queryString of [queryStringDrop, postgresFunction, createTrigger, queryStringCreate])
-        {
-            const databaseName = process.env.ADDR_TABLE_NAME;
-            console.log(`seed DB Q:${queryString} on DB:${databaseName}`)
-            let result = await dbHandlerClass.queryPool(pool, queryString, databaseName);
-            console.log(result[0]) 
-        }}
+        console.log(`☀️ CREATE TABLE: ${databaseName}`)  // ** Sanity check **
+        if (process.env.START_DROP_TABLES === "True") {
+            // If DROP is enabled in .ENV file
+            queryStringDrop = queryStringDrop.replace("$1", databaseName);
+            // console.log(`DROP DB Q:${queryStringDrop} — DB:${databaseName}`); // ** Sanity check **
+            let result = await dbHandlerClass.queryPool(pool, queryStringDrop, []);
+            console.log(`⚠️ DROP DATABSE RESULT:>${result[0]}`); 
+        }
+        for (let queryString of [postgresFunction, createTrigger, queryStringCreate]) {
+            queryString = queryString.replace("$1", databaseName);
+            // console.log(`seed DB Q:${queryString} on DB:${databaseName}`);  // ** Sanity check **
+            let result = await dbHandlerClass.queryPool(pool, queryString, []);
+            console.log(`🔗 ${result[0]}`);
+        }
+    return "CREATED";
+    }
