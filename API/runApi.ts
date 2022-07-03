@@ -1,7 +1,7 @@
-const pg = require('pg');
+
 // import * as pgTypes from 'pg';
 // const types = require('pg').types
-var dotenv = require('dotenv');
+import { pool } from '../ETL/databaseHandler'
 
 import AWS from 'aws-sdk';
 
@@ -15,7 +15,7 @@ import AWS from 'aws-sdk';
  * PUT, or DELETE request respectively, passing in the payload to the
  * DynamoDB API as a JSON body.
  */
-exports.handler = async (event: any, context: any) => {
+export var handler = async (event: any, context: any) => {
     //console.log('Received event:', JSON.stringify(event, null, 2));
 
     let body;

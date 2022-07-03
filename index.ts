@@ -1,2 +1,4 @@
-const eventHandler = require('./API/runApi');
+import { handler } from './API/runApi';
+var dotenv = require('dotenv');
 
+dotenv.config();
