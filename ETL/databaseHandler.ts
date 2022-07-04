@@ -38,7 +38,7 @@ export class dbHandlerClass {
           })
       .catch((err: { message: any; }) => {
           console.log(err.message)
-          console.log(`⛔️  Query failed: ${queryString}`)
+          console.log(`⛔️  Query failed: ${queryString} | PARAMS:${params}`)
           // throw err;
           // console.log(err.stack)    
           return [{}];
