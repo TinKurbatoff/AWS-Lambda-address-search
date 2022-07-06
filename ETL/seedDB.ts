@@ -3,7 +3,7 @@ var dotenv = require('dotenv');
 dotenv.config();
 
 /* —————————————————————- SEED DATABASE QUESRIES  ——————————————————— */
-let queryStringDrop = `DROP TABLE $1;`;
+let queryStringDrop = `DROP TABLE $tableName;`;
 let postgresFunction = `CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETURNS TRIGGER AS $$
                         BEGIN
                             NEW.updated_at = NOW();
@@ -11,10 +11,10 @@ let postgresFunction = `CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETUR
                         END;
                         $$ LANGUAGE plpgsql;`;
 let createTrigger = `CREATE OR REPLACE TRIGGER set_timestamp
-                    BEFORE UPDATE ON $1
+                    BEFORE UPDATE ON $tableName
                     FOR EACH ROW
                     EXECUTE PROCEDURE trigger_set_timestamp();`;
-let queryStringCreate = `CREATE TABLE IF NOT EXISTS $1 (\
+let queryStringCreate = `CREATE TABLE IF NOT EXISTS $tableName (\
                 id SERIAL PRIMARY KEY \
                 , created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() \
                 , updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW() \
@@ -45,13 +45,13 @@ export async function seedDatabase(tableName: string): Promise<string> {
         console.log(`☀️ CREATE TABLE: ${tableName}`)  // ** Sanity check **
         if (process.env.START_DROP_TABLES === "True") {
             // If DROP is enabled in .ENV file
-            queryStringDrop = queryStringDrop.replace("$1", tableName);
+            queryStringDrop = queryStringDrop.replace("$tableName", tableName);
             // console.log(`DROP DB Q:${queryStringDrop} — DB:${tableName}`); // ** Sanity check **
             let result = await dbHandlerClass.queryPool(pool, queryStringDrop, []);
             console.log(`⚠️ DROP TABLE RESULT:>${result[0].toString()}`); 
         }
         for (let queryString of [postgresFunction, queryStringCreate, createTrigger]) {
-            queryString = queryString.replace("$1", tableName);
+            queryString = queryString.replace("$tableName", tableName);
             // console.log(`seed DB Q:${queryString} on DB:${tableName}`);  // ** Sanity check **
             let result = await dbHandlerClass.queryPool(pool, queryString, []);
             console.log(`🔗 ${result[0].toString()}`);
