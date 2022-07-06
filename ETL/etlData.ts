@@ -33,6 +33,7 @@ export async function deployDataToDB(pool: PoolClient): Promise<string> {
     // Calculate start time
     let startTime = performance.now()
     let timeElapsedOld = startTime
+    let fileFinished = false
     fs.createReadStream(process.env.DATA_FILE_URI || './property.csv')
             .pipe(parse({ delimiter: ",", from_line: 1 }))
             .on("data", async function (row) {
@@ -46,7 +47,7 @@ export async function deployDataToDB(pool: PoolClient): Promise<string> {
                   let params: strObj = {}; // object of values — {column1:value1,..})
                   tableColumnsArray.forEach((key:string, i) => params[key] = row[i]); // fill with actual values
                   linebuffer.push(params) // add to array of values 
-                  if (linebuffer.length == 50) {
+                  if (fileFinished || linebuffer.length == 50) {
                     // console.log(linebuffer.toString())  // *** Sanity check ***
                     /* Generating a multi-row insert query */
                     const addRowsAtOnce = pgpromise.helpers.insert(linebuffer, tableColumns) + ' RETURNING id';
@@ -65,6 +66,7 @@ export async function deployDataToDB(pool: PoolClient): Promise<string> {
                 x++;
               })
             .on("end", function () {
+                fileFinished = true;
                 console.log("finished");
               })
             .on("error", function (error) {

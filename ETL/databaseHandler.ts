@@ -14,7 +14,7 @@ export const pool = new pg.Pool({ // Let use Pooling now
   database: process.env.RDS_DATABASE,
   port: process.env.RDS_PORT,
   host: process.env.RDS_HOSTNAME,
-  ssl: process.env.DB_SSL == "True",
+  ssl: process.env.DB_SSL === "True"? { rejectUnauthorized: false } : false,
 });
 
 // if a backend error or network problem happens
