@@ -4,7 +4,7 @@
         "alwaysStrict": true,
         "baseUrl": ".",
         "esModuleInterop": true,
-        "lib": ["ES2018"],
+        "lib": ["ES2019"],
         "module": "CommonJS",
         "moduleResolution": "Node",
         "noImplicitAny": true,
@@ -15,6 +15,6 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "strictNullChecks": true,
-        "target": "ES2018"
+        "target": "ES2019"
     },
 }
