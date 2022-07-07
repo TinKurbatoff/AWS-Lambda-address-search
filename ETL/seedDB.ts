@@ -10,7 +10,8 @@ let postgresFunction = `CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETUR
                             RETURN NEW;
                         END;
                         $$ LANGUAGE plpgsql;`;
-let createTrigger = `CREATE OR REPLACE TRIGGER set_timestamp
+let dropTrigger = `DROP TRIGGER IF EXISTS set_timestamp ON $tableName;`
+let createTrigger = `CREATE TRIGGER set_timestamp
                     BEFORE UPDATE ON $tableName
                     FOR EACH ROW
                     EXECUTE PROCEDURE trigger_set_timestamp();`;
@@ -50,7 +51,7 @@ export async function seedDatabase(tableName: string): Promise<string> {
             let result = await dbHandlerClass.queryPool(pool, queryStringDrop, []);
             console.log(`⚠️ DROP TABLE RESULT:>${result[0].toString()}`); 
         }
-        for (let queryString of [postgresFunction, queryStringCreate, createTrigger]) {
+        for (let queryString of [postgresFunction, queryStringCreate, dropTrigger, createTrigger]) {
             queryString = queryString.replace("$tableName", tableName);
             // console.log(`seed DB Q:${queryString} on DB:${tableName}`);  // ** Sanity check **
             let result = await dbHandlerClass.queryPool(pool, queryString, []);

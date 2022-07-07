@@ -34,6 +34,20 @@ export async function deployDataToDB(pool: PoolClient): Promise<string> {
     let startTime = performance.now()
     let timeElapsedOld = startTime
     let fileFinished = false
+    async function insertLines(rowsBuffer:Array<strObj> , tableColumnsValues:any) {
+        /* Generating a multi-row insert query */
+        const addRowsAtOnce = pgpromise.helpers.insert(rowsBuffer, tableColumnsValues) + ' RETURNING id';
+        linebuffer.length = 0; // Empty array                     
+        let result = await dbHandlerClass.queryPool(pool, addRowsAtOnce, [])  
+        // console.log(`RESULT length:${result.length}`)
+        // Measure timeing 
+        let timeElapsed = (performance.now() - startTime) / 1000  // convert ms to seconds
+        if (timeElapsedOld < Math.floor(timeElapsed)) {
+          console.log(`Inserted ${x} lines | took ${timeElapsed.toFixed(6)} s | csv_read_all:${fileFinished}`) 
+          }
+        timeElapsedOld = Math.floor(timeElapsed)
+
+        }
     fs.createReadStream(process.env.DATA_FILE_URI || './property.csv')
             .pipe(parse({ delimiter: ",", from_line: 1 }))
             .on("data", async function (row) {
@@ -47,26 +61,16 @@ export async function deployDataToDB(pool: PoolClient): Promise<string> {
                   let params: strObj = {}; // object of values — {column1:value1,..})
                   tableColumnsArray.forEach((key:string, i) => params[key] = row[i]); // fill with actual values
                   linebuffer.push(params) // add to array of values 
-                  if (fileFinished || linebuffer.length == 50) {
+                  if (linebuffer.length == 50) {
                     // console.log(linebuffer.toString())  // *** Sanity check ***
-                    /* Generating a multi-row insert query */
-                    const addRowsAtOnce = pgpromise.helpers.insert(linebuffer, tableColumns) + ' RETURNING id';
-                    linebuffer.length = 0; // Empty array                     
-                    let result = await dbHandlerClass.queryPool(pool, addRowsAtOnce, [])  
-                    // console.log(`RESULT length:${result.length}`)
-                    // Measure timeing 
-                    let timeElapsed = (performance.now() - startTime) / 1000  // convert ms to seconds
-                    if (timeElapsedOld < Math.floor(timeElapsed)) {
-                      console.log(`Inserted ${x} lines | took ${timeElapsed.toFixed(6)} s`) 
-                      }
-                    timeElapsedOld = Math.floor(timeElapsed)
-                    
+                    await insertLines(linebuffer, tableColumns);
                   }               
                 }
                 x++;
               })
-            .on("end", function () {
+            .on("end", async function () {
                 fileFinished = true;
+                await insertLines(linebuffer, tableColumns);
                 console.log("finished");
               })
             .on("error", function (error) {
